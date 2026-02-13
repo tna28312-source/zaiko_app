@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}商品一覧{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-bold mb-6">管理しているもの一覧</h2>
+
+<!-- 登録ボタン -->
+<div class="mb-4">
+  <a href="{{ url_for('new_material') }}"
+     class="inline-block px-4 py-2 bg-amber-700 text-white rounded-lg shadow hover:bg-amber-800">
+     ＋ 新しく登録
+  </a>
+</div>
+
+<!-- テーブルカード -->
+<div class="bg-white rounded-xl shadow overflow-x-auto">
+  <table class="min-w-full text-sm">
+
+    <!-- ヘッダー -->
+    <thead class="bg-amber-100">
+      <tr>
+        <th class="px-4 py-3 text-left">ID</th>
+        <th class="px-4 py-3 text-left">商品名</th>
+        <th class="px-4 py-3 text-left">単位</th>
+        <th class="px-4 py-3 text-left">最低在庫量</th>
+        <th class="px-4 py-3 text-left">操作</th>
+      </tr>
+    </thead>
+
+    <!-- データ -->
+    <tbody>
+      {% for m in materials %}
+      <tr class="border-t hover:bg-amber-50">
+        <td class="px-4 py-3">{{ m.material_id }}</td>
+        <td class="px-4 py-3 font-medium">{{ m.material_name }}</td>
+        <td class="px-4 py-3">{{ m.unit }}</td>
+        <td class="px-4 py-3">{{ m.min_stock | int }}</td>
+
+        <!-- 操作 -->
+        <td class="px-4 py-3 flex gap-2">
+
+          <!-- 編集 -->
+          <a href="{{ url_for('edit_material', id=m.material_id) }}"
+             class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs">
+             編集
+          </a>
+
+          <!-- 削除 -->
+          <form action="{{ url_for('delete_material', id=m.material_id) }}"
+                method="post"
+                onsubmit="return confirm('本当に削除しますか？');">
+            <button type="submit"
+                    class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs">
+              削除
+            </button>
+          </form>
+
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+
+  </table>
+</div>
+
+{% endblock %}

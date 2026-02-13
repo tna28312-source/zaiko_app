@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}在庫一覧{% endblock %}
+
+{% block content %}
+
+<!-- タイトル＋入力ボタン -->
+<div class="flex items-center gap-4 mb-6">
+  <h2 class="text-2xl font-bold">在庫一覧</h2>
+</div>
+{% if low_stocks %}
+<div class="mb-6 p-4 bg-red-100 border-2 border-red-400 rounded-xl shadow">
+  <h3 class="text-lg font-bold text-red-700 mb-2">
+    🛒 お買い物に行きましょう
+  </h3>
+
+  <ul class="list-disc list-inside text-red-800 font-semibold">
+    {% for s in low_stocks %}
+      <li>{{ s.material_name }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+<!-- 入力ボタン（他画面と統一） -->
+<div class="mb-4">
+  <a href="{{ url_for('create_stock_log') }}"
+     class="inline-block px-4 py-2 bg-amber-700 text-white rounded-lg shadow hover:bg-amber-800">
+     ＋ 買った・使った入力
+  </a>
+</div>
+
+<div class="bg-white rounded-xl shadow overflow-x-auto">
+  <table class="min-w-full text-sm">
+
+    <!-- ヘッダー -->
+    <thead class="bg-amber-100 text-amber-900">
+      <tr>
+        <th class="px-4 py-3 text-left">商品名</th>
+        <th class="px-4 py-3 text-left">在庫数</th>
+        <th class="px-4 py-3 text-left">単位</th>
+        <th class="px-4 py-3 text-left">最小在庫</th>
+      </tr>
+    </thead>
+
+    <!-- データ -->
+    <tbody>
+    {% for s in stocks %}
+      <tr class="border-t
+          {% if s.quantity | int <= s.min_stock | int %}
+                bg-red-200
+            {% else %}
+                hover:bg-amber-50
+            {% endif %}
+        ">
+        <td class="px-4 py-3 font-medium">{{ s.material_name }}</td>
+        <td class="px-4 py-3">{{ s.quantity | int }}</td>
+        <td class="px-4 py-3">{{ s.unit }}</td>
+        <td class="px-4 py-3">
+          {% if s.quantity | int <= s.min_stock | int %}
+            <span class="text-red-600 font-semibold">
+              {{ s.min_stock | int }}
+            </span>
+          {% else %}
+            {{ s.min_stock | int }}
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+
+  </table>
+</div>
+
+{% endblock %}
+

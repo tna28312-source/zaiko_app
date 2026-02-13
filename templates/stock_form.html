@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}入出庫登録{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-bold mb-6">買った・使った入力</h2>
+
+<div class="bg-white rounded-xl shadow p-6 max-w-lg">
+
+  <form method="post" action="{{ url_for('create_stock_log') }}" class="space-y-4">
+
+    <!-- 商品 -->
+    <div>
+      <label class="block text-sm font-medium mb-1">商品</label>
+      <select name="material_id" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+        {% for m in materials %}
+          <option value="{{ m.material_id }}">{{ m.material_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- 種別 -->
+    <div>
+      <label class="block text-sm font-medium mb-1">買った or 使った</label>
+      <select name="type" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+        <option value="in">買った</option>
+        <option value="out">使った</option>
+      </select>
+    </div>
+
+    <!-- 数量 -->
+    <div>
+      <label class="block text-sm font-medium mb-1">数量</label>
+      <input type="number" name="quantity" step="0.1" required
+             class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+    </div>
+
+    <!-- ボタン -->
+    <div class="pt-2 flex gap-3">
+      <button type="submit"
+              class="px-4 py-2 bg-amber-700 text-white rounded-lg shadow hover:bg-amber-800">
+        登録
+      </button>
+
+      <a href="{{ url_for('home') }}"
+         class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+        ← 戻る
+      </a>
+    </div>
+
+  </form>
+</div>
+
+{% endblock %}
+

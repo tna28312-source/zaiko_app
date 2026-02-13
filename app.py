@@ -16,6 +16,20 @@ def get_connection():
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
 
+def init_db():
+    conn = get_connection()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS stocks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            material_id INTEGER,
+            type TEXT,
+            quantity INTEGER,
+            created_at TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
 
 # =============================
 # 商品（materials）一覧
@@ -241,3 +255,4 @@ def create_material():
 
 if __name__ == "__main__":
     app.run(debug=True)
+    init_db()

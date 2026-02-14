@@ -30,6 +30,10 @@ def init_db():
     conn.commit()
     conn.close()
 
+    
+# ★ここ重要：常に実行される位置
+init_db()
+
 
 # =============================
 # 商品（materials）一覧
@@ -254,6 +258,5 @@ def create_material():
 
 
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
     

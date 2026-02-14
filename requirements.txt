@@ -8,3 +8,5 @@ Jinja2==3.1.6
 MarkupSafe==3.0.3
 packaging==26.0
 Werkzeug==3.1.5
+psycopg2-binary==2.9.11
+

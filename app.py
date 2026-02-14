@@ -20,29 +20,41 @@ def get_connection():
 def init_db():
     conn = get_connection()
 
-    # 商品マスタ
+    # =========================
+    # ★一時的：既存テーブル削除
+    # =========================
+    conn.execute("DROP TABLE IF EXISTS stocks")
+    conn.execute("DROP TABLE IF EXISTS materials")
+
+    # =========================
+    # materials（商品マスタ）
+    # =========================
     conn.execute("""
         CREATE TABLE IF NOT EXISTS materials (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            unit TEXT NOT NULL
+            material_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            material_name TEXT NOT NULL,
+            unit TEXT NOT NULL,
+            min_stock INTEGER DEFAULT 0,
+            is_deleted INTEGER DEFAULT 0
         )
     """)
 
-    # 入出庫ログ
+    # =========================
+    # stocks（在庫）
+    # =========================
     conn.execute("""
         CREATE TABLE IF NOT EXISTS stocks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            stock_id INTEGER PRIMARY KEY AUTOINCREMENT,
             material_id INTEGER NOT NULL,
-            type TEXT NOT NULL,
             quantity INTEGER NOT NULL,
-            created_at TEXT,
-            FOREIGN KEY (material_id) REFERENCES materials(id)
+            is_deleted INTEGER DEFAULT 0,
+            FOREIGN KEY (material_id) REFERENCES materials(material_id)
         )
     """)
 
     conn.commit()
     conn.close()
+
 
     
 # ★ここ重要：常に実行される位置

@@ -20,11 +20,6 @@ def get_connection():
 def init_db():
     conn = get_connection()
 
-    # ★一時リセット
-    conn.execute("DROP TABLE IF EXISTS stock_logs")
-    conn.execute("DROP TABLE IF EXISTS stocks")
-    conn.execute("DROP TABLE IF EXISTS materials")
-
     # materials
     conn.execute("""
         CREATE TABLE IF NOT EXISTS materials (

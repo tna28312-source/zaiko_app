@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 
 # PostgreSQL用の接続情報
-DB_URL = os.getenv("DATABASE_URL", "postgresql://zaiko_user:YOUR_PASSWORD@dpg-d68188ggjchc73b9og8g-a.oregon-postgres.render.com/zaiko_db_vmw0")
+DB_URL = os.getenv("DATABASE_URL", "postgresql://zaiko_user:GJLpm9lR8t4GaBuKdR7eyiHSgbdTQqUf@dpg-d68188ggjchc73b9og8g-a.oregon-postgres.render.com/zaiko_db_vmw0")
 
 def get_connection():
     # RealDictCursor を使うと fetchall() が辞書型で返る

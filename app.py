@@ -155,20 +155,25 @@ def create_material():
 
     conn = get_connection()
     cur = conn.cursor()
+
+    # ★ RETURNING を使ってID取得
     cur.execute("""
         INSERT INTO materials (material_name, unit, min_stock, is_deleted)
         VALUES (%s, %s, %s, 0)
+        RETURNING material_id
     """, (name, unit, float(min_stock) if min_stock else 0))
 
-    material_id = cur.fetchone()
-    # PostgreSQLでは RETURNING を使うとID取得可能
-    cur.execute("SELECT currval(pg_get_serial_sequence('materials','material_id')) AS material_id;")
     material_id = cur.fetchone()["material_id"]
 
     # 初期在庫を作成
-    cur.execute("INSERT INTO stocks (material_id, quantity, is_deleted) VALUES (%s, 0, 0)", (material_id,))
+    cur.execute(
+        "INSERT INTO stocks (material_id, quantity, is_deleted) VALUES (%s, 0, 0)",
+        (material_id,)
+    )
+
     conn.commit()
     conn.close()
+
     return redirect(url_for("index"))
 
 if __name__ == "__main__":

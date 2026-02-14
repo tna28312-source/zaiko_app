@@ -248,44 +248,4 @@ def new_material():
     return render_template("new_material.html")
 
 
-# =============================
-# 商品登録処理
-# =============================
-@app.route("/materials/create", methods=["POST"])
-def create_material():
-    name = request.form["name"]
-    unit = request.form["unit"]
-    min_stock = request.form.get("min_stock", 0)
-
-    conn = get_connection()
-    cur = conn.cursor()
-
-    # materialsテーブルへ登録（削除フラグは0がデフォルト）
-    cur.execute(
-        """
-        INSERT INTO materials (material_name, unit, min_stock, is_deleted)
-        VALUES (?, ?, ?, 0)
-        """,
-        (name, unit, float(min_stock) if min_stock else 0),
-    )
-
-    material_id = cur.lastrowid
-
-    # stocksテーブルに初期在庫0で作成
-    cur.execute(
-        """
-        INSERT INTO stocks (material_id, quantity, is_deleted)
-        VALUES (?, 0, 0)
-        """,
-        (material_id,),
-    )
-
-    conn.commit()
-    conn.close()
-
-    return redirect(url_for("index"))
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
     

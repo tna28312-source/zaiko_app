@@ -1,10 +1,21 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import os
 
 app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "dev-secret")
+
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"  # 未ログイン時の遷移先
+# ★ここ追加
+login_manager.login_message = None
+
 
 # PostgreSQL用の接続情報
 DB_URL = os.getenv("DATABASE_URL", "postgresql://zaiko_user:GJLpm9lR8t4GaBuKdR7eyiHSgbdTQqUf@dpg-d68188ggjchc73b9og8g-a.oregon-postgres.render.com/zaiko_db_vmw0")
@@ -15,9 +26,101 @@ def get_connection():
     return conn
 
 # =============================
+# ユーザークラス
+# =============================
+class User(UserMixin):
+    def __init__(self, id, username, password):
+        self.id = str(id)   # ← Flask-Loginは文字列推奨
+        self.username = username
+        self.password = password
+
+
+# =============================
+# ユーザー読み込み関数
+# =============================
+@login_manager.user_loader
+def load_user(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+    user = cur.fetchone()
+    conn.close()
+
+    if user:
+        return User(user["id"], user["username"], user["password"])
+    return None
+
+# =============================
+# ログイン処理
+# =============================
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = None
+
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM users WHERE username = %s", (username,))
+        user = cur.fetchone()
+        conn.close()
+
+        if user and check_password_hash(user["password"], password):
+            login_user(User(user["id"], user["username"], user["password"]))
+            return redirect(url_for("home"))
+        else:
+            error = "ユーザー名かパスワードが違います"
+
+    return render_template("login.html", error=error)
+
+
+# =============================
+# ログアウト
+# =============================
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
+
+# =============================
+# ユーザー登録
+# =============================
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        hashed_pw = generate_password_hash(password)
+
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute(
+            "INSERT INTO users (username, password) VALUES (%s, %s)",
+            (username, hashed_pw)
+        )
+
+        conn.commit()
+        conn.close()
+
+        # ★ 成功メッセージ
+        flash("ユーザー登録が完了しました！ログインしてください。")
+
+        return redirect(url_for("login"))
+
+    return render_template("register.html")
+
+
+# =============================
 # 商品（materials）一覧
 # =============================
 @app.route("/materials", methods=["GET", "POST"])
+@login_required
 def index():
     conn = get_connection()
     cur = conn.cursor()
@@ -30,6 +133,7 @@ def index():
 # 在庫一覧画面<トップページ>
 # =============================
 @app.route("/")
+@login_required
 def home():
     conn = get_connection()
     cur = conn.cursor()
@@ -49,6 +153,7 @@ def home():
 # 入出庫登録フォーム表示
 # =============================
 @app.route("/stocks/new")
+@login_required
 def new_stock_log():
     conn = get_connection()
     cur = conn.cursor()
@@ -61,6 +166,7 @@ def new_stock_log():
 # 入出庫登録処理
 # =============================
 @app.route("/stocks/create", methods=["POST"])
+@login_required
 def create_stock_log():
     material_id = request.form["material_id"]
     log_type = request.form["type"]
@@ -102,6 +208,7 @@ def create_stock_log():
 # 商品編集フォーム表示＋更新処理
 # =============================
 @app.route("/materials/<int:id>/edit", methods=["GET", "POST"])
+@login_required
 def edit_material(id):
     conn = get_connection()
     cur = conn.cursor()
@@ -128,6 +235,7 @@ def edit_material(id):
 # 商品削除（論理削除）
 # =============================
 @app.route("/materials/<int:id>/delete", methods=["POST"])
+@login_required
 def delete_material(id):
     conn = get_connection()
     cur = conn.cursor()
@@ -141,6 +249,7 @@ def delete_material(id):
 # 商品登録フォーム表示
 # =============================
 @app.route("/materials/new")
+@login_required
 def new_material():
     return render_template("new_material.html")
 
@@ -148,6 +257,7 @@ def new_material():
 # 商品登録処理
 # =============================
 @app.route("/materials/create", methods=["POST"])
+@login_required
 def create_material():
     name = request.form["name"]
     unit = request.form["unit"]
